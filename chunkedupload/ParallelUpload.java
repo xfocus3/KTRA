@@ -31,6 +31,7 @@ import com.kaltura.client.IKalturaLogger;
 import com.kaltura.client.KalturaApiException;
 import com.kaltura.client.KalturaClient;
 import com.kaltura.client.KalturaLogger;
+import com.kaltura.client.types.KalturaUploadToken;
 
 import java.io.File;
 import java.io.FileInputStream;
