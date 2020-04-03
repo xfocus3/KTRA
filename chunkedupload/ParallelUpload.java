@@ -27,20 +27,17 @@
 // ===================================================================================================
 package chunkedupload;
 
+import com.kaltura.client.IKalturaLogger;
+import com.kaltura.client.KalturaApiException;
+import com.kaltura.client.KalturaClient;
+import com.kaltura.client.KalturaLogger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
-import java.lang.Math;
-
-import com.kaltura.client.IKalturaLogger;
-import com.kaltura.client.KalturaApiException;
-import com.kaltura.client.KalturaClient;
-import com.kaltura.client.KalturaConfiguration;
-import com.kaltura.client.KalturaLogger;
-import com.kaltura.client.services.KalturaUploadTokenService;
-import com.kaltura.client.types.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParallelUpload {
 
@@ -78,10 +75,10 @@ public class ParallelUpload {
 			bytesLeft -= readSize;
 			return super.read(b, 0, readSize);
 		}
-	
+
 		/*
 		 * prevent the http request from closing the file so it will be reused throughout the thread
-		 */	
+		 */
 		public void close()
 		{
 		}
@@ -124,7 +121,7 @@ public class ParallelUpload {
 					boolean success = false;
 					do
 					{
-			        		log.info(String.format("%s: chunk %d pos %d size %d", threadName, i, seekPos, size));
+						log.info(String.format("%s: chunk %d pos %d size %d", threadName, i, seekPos, size));
 
 						stream.resetChunk(seekPos, size);
 						success = pu.addChunk(stream, true, (seekPos + size) == pu.fileSize, seekPos);
@@ -157,7 +154,7 @@ public class ParallelUpload {
 	private int retryCount = 0;
 
 	public int chunkSize = 10*1024*1024;
-	public int threadCount = 5;
+	public int threadCount = 10;
 	public int maxChunkRetries = 3;
 	public int maxRetries = 5;
 
@@ -176,7 +173,7 @@ public class ParallelUpload {
 		if (retryCount < maxRetries && nextChunk < chunkCount)
 			return nextChunk++;
 
-		return -1; 
+		return -1;
 	}
 
 	private synchronized void addUploadSize(long size)
@@ -211,7 +208,7 @@ public class ParallelUpload {
 		stream.forceClose();
 
 		List<Thread> threads = new ArrayList<Thread>();
-		
+
 		for(int i=0; i < threadCount; i++) {
 			UploadTask uploadTask = new UploadTask();
 			uploadTask.pu = this;
@@ -227,27 +224,26 @@ public class ParallelUpload {
 		log.info("Uploading token " + upToken.id + " file size " + fileSize + " uploaded " + uploadSize);
 
 		return uploadSize == fileSize ? upToken.id : null;
- 	}
+	}
 
-    /**
-     * @param ChunkedStream stream
-     * @param boolean resume
-     * @param boolean finalChunk
-     * @param long resumeAt
-     *
-     * @return
-     */
-    private boolean addChunk(ChunkedStream stream, boolean resume, boolean finalChunk, long resumeAt) throws IOException {
-        try {
-            client.getUploadTokenService().upload(upToken.id, stream, "a.dat", stream.getSize(), resume, finalChunk, resumeAt);
-		return true;
-        } catch (KalturaApiException e) {
-            e.printStackTrace();
-            log.error(e.getMessage());
-        }
-        return false;
-    }
+	/**
+	 * @param ChunkedStream stream
+	 * @param boolean resume
+	 * @param boolean finalChunk
+	 * @param long resumeAt
+	 *
+	 * @return
+	 */
+	private boolean addChunk(ChunkedStream stream, boolean resume, boolean finalChunk, long resumeAt) throws IOException {
+		try {
+			client.getUploadTokenService().upload(upToken.id, stream, "a.mkv", stream.getSize(), resume, finalChunk, resumeAt);
+			return true;
+		} catch (KalturaApiException e) {
+			e.printStackTrace();
+			log.error(e.getMessage());
+		}
+		return false;
+	}
 
 
 }
- 
