@@ -155,7 +155,7 @@ public class ParallelUpload {
 	private int retryCount = 0;
 
 	public int chunkSize = 10*1024*1024;
-	public int threadCount = 50;
+	public int threadCount = 5;
 	public int maxChunkRetries = 3;
 	public int maxRetries = 5;
 
